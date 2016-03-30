@@ -1,62 +1,101 @@
+'use strict'
+
 const fs = require('fs')
-const path = require('path')
+const nodepath = require('path')
 const recursive = require('recursive-readdir')
-// const searchIndex = require('search-index')
 const jsonFile = require('jsonfile')
+const inquirer = require('inquirer')
+
 const config = require('./config.js')
 
-const myPath = config.filePath
+const myPaths = config.filePaths
 const indexFile = './fileIndex.json'
 
-const fileData = { files: [] }
+const questions = [{
+  name: 'query',
+  message: 'What\'s your query?',
+  validate: (input) => {
+    if (input.length < 1) {
+      return false
+    }
+    return true
+  }
+}]
 
-fs.exists(indexFile, (exists) => {
-  if (exists) fs.unlink(indexFile)
-})
+const fileData = {
+  files: []
+}
 
-recursive(myPath, (err, files) => {
-  if (err) throw err
-  files.forEach(file => {
-    const formattedPath = file.toString().split('\\').join('/')
-    fileData.files.push({
-      fileName: path.basename(file),
-      filePath: formattedPath
+// functions
+
+function deleteIndexFile(file) {
+  fs.exists(file, (exists) => {
+    if (exists) fs.unlink(file)
+  })
+}
+
+function filterPaths(paths) {
+  return paths.filter((path) => {
+    try {
+      fs.accessSync(path, fs.R_OK)
+      return true
+    } catch (e) {
+      return false
+    }
+  })
+}
+
+function createIndexData(paths, callback) {
+  let counter = 0
+  const filteredPaths = filterPaths(paths)
+  filteredPaths.forEach((path) => {
+    recursive(path, (err, files) => {
+      if (err) throw err
+      files.forEach(file => {
+        const fileName = nodepath.basename(file)
+        console.log(fileName)
+        const formattedPath = file.toString().split('\\').join('/')
+        fileData.files.push({
+          fileName,
+          filePath: formattedPath
+        })
+      })
+      counter++
+      if (counter === filteredPaths.length) {
+        callback()
+      }
     })
   })
-})
+}
 
+function createIndexFile(filePath, data, callback) {
+  jsonFile.writeFile(filePath, data, (error) => {
+    if (error) throw error
+    console.log('written')
+    callback()
+  })
+}
 
-const filterFileList = (list, query) => {
+function filterFileList(list, query) {
   return list.filter(file => {
     return file.fileName.indexOf(query) >= 0
   })
 }
 
-const searchFile = (query, file) => {
+function searchFile(query, file) {
   jsonFile.readFile(file, (err, list) => {
     if (err) throw err
-
     console.log(filterFileList(list.files, query))
+      // console.log(list)
   })
 }
 
-jsonFile.writeFile(indexFile, fileData, (error) => {
-  if (error) throw error
-  console.log('written')
-  searchFile('sql', indexFile)
+// application
+deleteIndexFile(indexFile)
+createIndexData(myPaths, function() {
+  createIndexFile(indexFile, fileData, function() {
+    inquirer.prompt(questions, (answers) => {
+      searchFile(answers.query, indexFile)
+    })
+  })
 })
-
-// function addToIndex(filePath) {
-//   searchIndex(filePath, (err, si) => {
-//     // si.search(q, (error, results) => {
-//     //   if (error) console.log(error)
-//     //   // console.log(results)
-//     // })
-//     console.log(si)
-//   })
-// }
-
-// const q = {
-//   query: { '*': ['sql'] },
-//   facets:
-// }
