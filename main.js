@@ -1,10 +1,9 @@
 /* eslint strict:0 */
 'use strict'
 
-const jsonFile = require('jsonfile')
 const inquirer = require('inquirer')
 const fileIndex = require('./modules/fileIndex')
-//const indexFile = './data/files.json'
+const fileSearch = require('./modules/fileSearch')
 const initialQuestion = [{
   name: 'action',
   message: 'What would you like to do?',
@@ -25,20 +24,6 @@ const queryQuestion = [{
   }
 }]
 
-function filterFileList(list, query) {
-  return list.filter(file => {
-    return file.fileName.toLowerCase().indexOf(query.toLowerCase()) >= 0
-  })
-}
-
-function searchFile(query, file, callback) {
-  jsonFile.readFile(file, (err, list) => {
-    if (err) throw err
-    const filteredFileList = filterFileList(list.files, query)
-    callback(filteredFileList)
-  })
-}
-
 function initialPrompt() {
   inquirer.prompt(initialQuestion, (answer) => {
     if (answer.action === '1') {
@@ -49,7 +34,7 @@ function initialPrompt() {
       })
     } else if (answer.action === '2') {
       inquirer.prompt(queryQuestion, (answers) => {
-        searchFile(answers.query, indexFile, (fileList) => {
+        fileSearch.search(answers.query, (fileList) => {
           console.log(fileList)
           initialPrompt()
         })
