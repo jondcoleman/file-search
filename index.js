@@ -1,3 +1,5 @@
+/* eslint strict:0 */
+
 'use strict'
 
 const fs = require('fs')
@@ -10,6 +12,16 @@ const config = require('./config.js')
 
 const myPaths = config.filePaths
 const indexFile = './fileIndex.json'
+
+const initialQuestions = [{
+  name: 'action',
+  message: 'What would you like to do?',
+  type: 'rawlist',
+  choices: [
+    { name: 'Rebuild Index', value: '1', short: '1' },
+    { name: 'Make a Query', value: '2', short: '2' },
+  ]
+}]
 
 const questions = [{
   name: 'query',
@@ -53,7 +65,7 @@ function createIndexData(paths, callback) {
       if (err) throw err
       files.forEach(file => {
         const fileName = nodepath.basename(file)
-        console.log(fileName)
+        process.stdout.write(`${fileName}\r`)
         const formattedPath = file.toString().split('\\').join('/')
         fileData.files.push({
           fileName,
@@ -71,31 +83,49 @@ function createIndexData(paths, callback) {
 function createIndexFile(filePath, data, callback) {
   jsonFile.writeFile(filePath, data, (error) => {
     if (error) throw error
-    console.log('written')
+    console.log('\nwritten')
     callback()
   })
 }
 
 function filterFileList(list, query) {
   return list.filter(file => {
-    return file.fileName.indexOf(query) >= 0
+    return file.fileName.toLowerCase().indexOf(query.toLowerCase()) >= 0
   })
 }
 
-function searchFile(query, file) {
+function searchFile(query, file, callback) {
   jsonFile.readFile(file, (err, list) => {
     if (err) throw err
-    console.log(filterFileList(list.files, query))
-      // console.log(list)
+    const filteredFileList = filterFileList(list.files, query)
+    callback(filteredFileList)
+  })
+}
+
+function initialPrompt() {
+  inquirer.prompt(initialQuestions, (answer) => {
+    if (answer.action === '1') {
+      console.log('Rebuilding.  Please wait...')
+      deleteIndexFile(indexFile)
+      createIndexData(myPaths, () => {
+        createIndexFile(indexFile, fileData, () => {
+          console.log('Index rebuilt.')
+          initialPrompt()
+        })
+      })
+    } else if (answer.action === '2') {
+      inquirer.prompt(questions, (answers) => {
+        searchFile(answers.query, indexFile, (fileList) => {
+          console.log(fileList)
+          initialPrompt()
+        })
+      })
+    } else {
+      console.log('invalid command')
+      initialPrompt()
+    }
   })
 }
 
 // application
-deleteIndexFile(indexFile)
-createIndexData(myPaths, function() {
-  createIndexFile(indexFile, fileData, function() {
-    inquirer.prompt(questions, (answers) => {
-      searchFile(answers.query, indexFile)
-    })
-  })
-})
+initialPrompt()
