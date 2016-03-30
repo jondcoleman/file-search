@@ -31,22 +31,25 @@ function filterPaths(paths) {
 }
 
 function createIndexData(paths, callback) {
-  let counter = 0
+  let pathCounter = 0
+  let fileCounter = 0
   const filteredPaths = filterPaths(paths)
   filteredPaths.forEach((path) => {
+    console.log(`Indexing path: ${path}`)
     recursive(path, (err, files) => {
       if (err) throw err
       files.forEach(file => {
         const fileName = nodepath.basename(file)
-        process.stdout.write(`${fileName}\r`)
         const formattedPath = file.toString().split('\\').join('/')
         fileData.files.push({
           fileName,
           filePath: formattedPath
         })
+        fileCounter++
+        process.stdout.write(`Files Indexed: ${fileCounter}\r`)
       })
-      counter++
-      if (counter === filteredPaths.length) {
+      pathCounter++
+      if (pathCounter === filteredPaths.length) {
         callback()
       }
     })

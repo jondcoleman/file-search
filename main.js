@@ -35,7 +35,9 @@ function initialPrompt() {
     } else if (answer.action === '2') {
       inquirer.prompt(queryQuestion, (answers) => {
         fileSearch.search(answers.query, (fileList) => {
-          console.log(fileList)
+          fileList.forEach((file) => {
+            console.log(file.filePath)
+          })
           initialPrompt()
         })
       })
@@ -46,5 +48,4 @@ function initialPrompt() {
   })
 }
 
-// application
 initialPrompt()
