@@ -2,7 +2,7 @@
 'use strict'
 
 const fs = require('fs')
-const nodepath = require('path')
+const path = require('path')
 const recursive = require('recursive-readdir')
 const jsonFile = require('jsonfile')
 const config = require('../config.js')
@@ -13,6 +13,17 @@ const fileData = {
   files: []
 }
 
+let indexFilter = config.ignoredFiles.map((file) => {
+  return file
+})
+
+indexFilter = indexFilter.concat(config.ignoredDirectories.map((directory) => {
+  return (file, stats) => {
+    return stats.isDirectory() && path.basename(file) == directory;
+  }
+}))
+console.log(indexFilter)
+
 function deleteIndexFile(file) {
   fs.exists(file, (exists) => {
     if (exists) fs.unlink(file)
@@ -20,9 +31,9 @@ function deleteIndexFile(file) {
 }
 
 function filterPaths(paths) {
-  return paths.filter((path) => {
+  return paths.filter((myPath) => {
     try {
-      fs.accessSync(path, fs.R_OK)
+      fs.accessSync(myPath, fs.R_OK)
       return true
     } catch (e) {
       return false
@@ -34,12 +45,12 @@ function createIndexData(paths, callback) {
   let pathCounter = 0
   let fileCounter = 0
   const filteredPaths = filterPaths(paths)
-  filteredPaths.forEach((path) => {
-    console.log(`Indexing path: ${path}`)
-    recursive(path, (err, files) => {
+  filteredPaths.forEach((myPath) => {
+    console.log(`Indexing path: ${myPath}`)
+    recursive(myPath, indexFilter, (err, files) => {
       if (err) throw err
       files.forEach(file => {
-        const fileName = nodepath.basename(file)
+        const fileName = path.basename(file)
         const formattedPath = file.toString().split('\\').join('/')
         fileData.files.push({
           fileName,

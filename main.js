@@ -2,17 +2,26 @@
 'use strict'
 
 const inquirer = require('inquirer')
+const open = require('open')
 const fileIndex = require('./modules/fileIndex')
 const fileSearch = require('./modules/fileSearch')
+
 const initialQuestion = [{
   name: 'action',
   message: 'What would you like to do?',
   type: 'rawlist',
-  choices: [
-    { name: 'Rebuild Index', value: '1', short: '1' },
-    { name: 'Make a Query', value: '2', short: '2' },
-  ]
+  choices: [{
+    name: 'Make a Query',
+    value: 1
+  }, {
+    name: 'Rebuild Index',
+    value: 2
+  }, {
+    name: 'Quit',
+    value: 3
+  }]
 }]
+
 const queryQuestion = [{
   name: 'query',
   message: 'What\'s your query?',
@@ -24,21 +33,42 @@ const queryQuestion = [{
   }
 }]
 
+const fileResultQuestion = [{
+  name: 'fileSelection',
+  message: 'Which file do you want? (Type "cancel" to start over)'
+}]
+
 function initialPrompt() {
   inquirer.prompt(initialQuestion, (answer) => {
-    if (answer.action === '1') {
+    if (answer.action === 3) return
+    else if (answer.action === 2) {
       console.log('Rebuilding.  Please wait...')
       fileIndex.create(() => {
         console.log('Done rebuilding')
         initialPrompt()
       })
-    } else if (answer.action === '2') {
+    } else if (answer.action === 1) {
       inquirer.prompt(queryQuestion, (answers) => {
         fileSearch.search(answers.query, (fileList) => {
+          let fileNumber = 0
           fileList.forEach((file) => {
-            console.log(file.filePath)
+            console.log(`${fileNumber}) ${file.filePath}`)
+            fileNumber++
           })
-          initialPrompt()
+
+          inquirer.prompt(fileResultQuestion, (selection) => {
+            if (selection.fileSelection >= 0
+                && selection.fileSelection < fileNumber
+                && typeof Number(selection.fileSelection) === 'number') {
+              const file = fileList[selection.fileSelection].filePath.replace(/\//g, '\\\\')
+              open(file)
+            } else if (selection.fileSelection.toLowerCase() === 'cancel') {
+              console.log('Query cancelled.')
+            } else {
+              console.log('Invalid selection.')
+            }
+            initialPrompt()
+          })
         })
       })
     } else {
