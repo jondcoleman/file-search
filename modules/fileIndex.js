@@ -5,7 +5,8 @@ const fs = require('fs')
 const path = require('path')
 const recursive = require('recursive-readdir')
 const jsonFile = require('jsonfile')
-const config = require('../config.js')
+const configFile = './config.json'
+const config = jsonFile.readFileSync(configFile)
 const myPaths = config.filePaths
 const indexFile = './data/files.json'
 
@@ -19,7 +20,7 @@ let indexFilter = config.ignoredFiles.map((file) => {
 
 indexFilter = indexFilter.concat(config.ignoredDirectories.map((directory) => {
   return (file, stats) => {
-    return stats.isDirectory() && path.basename(file) == directory;
+    return stats.isDirectory() && path.basename(file) === directory
   }
 }))
 console.log(indexFilter)

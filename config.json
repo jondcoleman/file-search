@@ -1,0 +1,14 @@
+{
+  "filePaths": [
+    "Z:/Product/6 - Defend/Documentation",
+    "C:/Users/jcoleman/Dropbox"
+  ],
+  "ignoredFiles": [
+    "*.dll",
+    "*.exe",
+    "foo.css"
+  ],
+  "ignoredDirectories": [
+    "eSupport Backups"
+  ]
+}
