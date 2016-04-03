@@ -1,7 +1,7 @@
 /* eslint strict:0 */
 'use strict'
-
-const jsonFile = require('jsonfile')
+const Promise = require('bluebird')
+const jsonFile = Promise.promisifyAll(require('jsonfile'))
 const indexFile = './data/files.json'
 
 function filterFileList(list, query) {
@@ -12,10 +12,14 @@ function filterFileList(list, query) {
 
 module.exports = {
   search: (query, callback) => {
-    jsonFile.readFile(indexFile, (err, list) => {
-      if (err) throw err
+    console.log(jsonFile.readFileAsync)
+    jsonFile.readFileAsync(indexFile)
+    .then((list) => {
       const filteredFileList = filterFileList(list.files, query)
       callback(filteredFileList)
+    })
+    .error((err) => {
+      throw err
     })
   }
 }
