@@ -61,6 +61,7 @@ function initialPrompt() {
                 && selection.fileSelection < fileNumber
                 && typeof Number(selection.fileSelection) === 'number') {
               const file = fileList[selection.fileSelection].filePath.replace(/\//g, '\\\\')
+              console.log('Opening...')
               open(file)
             } else if (selection.fileSelection.toLowerCase() === 'cancel') {
               console.log('Query cancelled.')
