@@ -2,9 +2,11 @@
 
 ### Set Up
 
-In order to use this project you must set up your `config.json` file.  A sample is included in the project.
+Download or clone the repo, then, in your terminal, run `npm install` to install the required modules.
 
-`filePaths` should be the paths that you want to index. You can index mapped drives too but the mapped drive must be connected at the time that you index or it will be skipped.
+In order to use this project you must create a `config.json` file.  A sample is included in the project.
+
+`directoryPaths` should be the paths that you want to index. You can index mapped drives too but the mapped drive must be connected at the time that you index or it will be skipped.
 
 `ignoredFiles` are specific file names that you want to exclude from being indexed.  You can use wildcard character `*` in the file name to exclude various files that match.
 
