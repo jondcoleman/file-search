@@ -7,7 +7,7 @@ const recursive = require('recursive-readdir')
 const jsonFile = require('jsonfile')
 const configFile = './config.json'
 const config = jsonFile.readFileSync(configFile)
-const myPaths = config.filePaths
+const myPaths = config.directoryPaths
 const indexFile = './data/files.json'
 
 const fileData = {

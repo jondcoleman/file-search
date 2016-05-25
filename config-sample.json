@@ -7,7 +7,7 @@
 /* 'ignoredDirectories' are names of directories (not the path) that you want to exclude */
 
 {
-  "filePaths": [
+  "directoryPaths": [
     "C:/Users/BillyBob/Dropbox",
     "Z:/Public/Documents"
   ],
