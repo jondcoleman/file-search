@@ -13,9 +13,12 @@ function filterFileList(list, query) {
 module.exports = {
   search: (query, callback) => {
     jsonFile.readFile(indexFile, (err, list) => {
-      if (err) throw err
+      if (err) {
+        callback(err)
+        return
+      }
       const filteredFileList = filterFileList(list.files, query)
-      callback(filteredFileList)
+      callback(err, filteredFileList)
     })
   }
 }

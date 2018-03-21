@@ -49,7 +49,12 @@ function initialPrompt() {
       })
     } else if (answer.action === 1) {
       inquirer.prompt(queryQuestion, (answers) => {
-        fileSearch.search(answers.query, (fileList) => {
+        fileSearch.search(answers.query, (err, fileList) => {
+          if (err) {
+            console.log('There was a problem searching the index; please try rebuilding.')
+            initialPrompt()
+            return
+          }
           let fileNumber = 0
           fileList.forEach((file) => {
             console.log(`${fileNumber}) ${file.filePath}`)
